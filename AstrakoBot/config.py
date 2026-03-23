@@ -8,6 +8,7 @@ class Development:
     JOIN_LOGGER = os.environ.get("JOIN_LOGGER", "")
     USE_JOIN_LOGGER = True
     ALLOW_CHATS = True
+    DEV_USERS = []
     SUDO_USERS = []
     LOAD = []
     NO_LOAD = []
