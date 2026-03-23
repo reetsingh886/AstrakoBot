@@ -25,7 +25,7 @@ class Development:
 
     # LOAD CONTROL
     LOAD = []
-    NO_LOAD = ["youtube"]   # 🔥 FIX (important)
+    NO_LOAD = ["youtube", "connection"]   # 🔥 FIX (important)
 
     # WEB SETTINGS
     WEBHOOK = False
