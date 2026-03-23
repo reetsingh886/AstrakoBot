@@ -81,7 +81,7 @@ Have a look at the following for an idea of some of the things I can help you wi
                         ),
                         InlineKeyboardButton(
                             text="📢 UPDATE",
-                            url="https://t.me/YOUR_CHANNEL",
+                            url="https://t.me/BOTxBOOSTER",
                         ),
                     ],
                 ]
