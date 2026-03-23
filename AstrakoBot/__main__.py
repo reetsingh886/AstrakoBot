@@ -46,6 +46,26 @@ from telegram.ext import (
 )
 from telegram.ext.dispatcher import DispatcherHandlerStop, run_async
 from telegram.utils.helpers import escape_markdown
+def get_readable_time(seconds: int) -> str:
+    count = 0
+    ping_time = ""
+    time_list = []
+    time_suffix_list = ["s", "m", "h", "d"]
+
+    while count < 4:
+        count += 1
+        remainder, result = divmod(seconds, 60) if count < 3 else divmod(seconds, 24)
+        if seconds == 0 and remainder == 0:
+            break
+        time_list.append(int(result))
+        seconds = int(remainder)
+
+    time_list.reverse()
+    for x in range(len(time_list)):
+        time_list[x] = str(time_list[x]) + time_suffix_list[x]
+
+    return ":".join(time_list)
+
 
 def start(update: Update, context: CallbackContext):
     uptime = get_readable_time((time.time() - StartTime))
@@ -55,7 +75,7 @@ def start(update: Update, context: CallbackContext):
         first_name = update.effective_user.first_name
 
         update.effective_message.reply_photo(
-            photo="https://files.catbox.moe/6tnx2a.jpg",  # 👈 yahi image hai (yaha change kar sakta hai)
+            photo="https://files.catbox.moe/6tnx2a.jpg",
 
             caption=f"""
 Hey there! My name is *{escape_markdown(context.bot.first_name)}*.
@@ -94,15 +114,8 @@ Have a look at the following for an idea of some of the things I can help you wi
                 f"✅ Bot Alive\n⏱ Uptime: {uptime}",
                 parse_mode=ParseMode.HTML,
             )
-        except:
-            pass
-                    
-        try:
-            update.effective_message.reply_text(
-                f"✅ Bot Alive\n⏱ Uptime: {uptime}",
-                parse_mode=ParseMode.HTML,
-            )
-        except:
+        except Exception as e:
+            print(e)
             pass
         try:
             update.effective_message.reply_text(
