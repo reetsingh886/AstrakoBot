@@ -46,11 +46,13 @@ from telegram.ext import (
 )
 from telegram.ext.dispatcher import DispatcherHandlerStop, run_async
 from telegram.utils.helpers import escape_markdown
+
+
 def get_readable_time(seconds: int) -> str:
     count = 0
     ping_time = ""
     time_list = []
-    time_suffix_list = ["s", "m", "h", "d"]
+    time_suffix_list = ["s", "m", "h", "days"]
 
     while count < 4:
         count += 1
@@ -60,63 +62,194 @@ def get_readable_time(seconds: int) -> str:
         time_list.append(int(result))
         seconds = int(remainder)
 
-    time_list.reverse()
     for x in range(len(time_list)):
         time_list[x] = str(time_list[x]) + time_suffix_list[x]
+    if len(time_list) == 4:
+        ping_time += time_list.pop() + ", "
 
-    return ":".join(time_list)
+    time_list.reverse()
+    ping_time += ":".join(time_list)
+
+    return ping_time
+
+
+PM_START_TEXT = """
+Hi {}, my name is {}! 
+I am a modular group management bot.
+
+You can find my list of available commands with /help.
+"""
+
+HELP_STRINGS = """
+Hey there! My name is *{}*.
+I'm a modular group management bot and help admins to manage their groups. Have a look at the following for an idea of some of \
+the things I can help you with.
+
+*Main* commands available:
+ • /help: PM's you this message.
+ • /help <module name>: PM's you info about that module.
+ • /donate: information on how to donate!
+ • /settings:
+   • in PM: will send you your settings for all supported modules.
+   • in a group: will redirect you to pm, with all that chat's settings.
+{}
+And the following:
+""".format(
+    dispatcher.bot.first_name,
+    "" if not ALLOW_EXCL else "\nAll commands can either be used with / or !.\n",
+)
+
+ASTRAKOBOT_IMG = "https://i.imgur.com/1oah5E2.jpg"
+
+DONATE_STRING = """Heya, glad to hear you want to donate!
+AstrakoBot is hosted on its own server and doesn't require any donations as of now but \
+You can donate to the original writer of the Base code, Paul
+There are two ways of supporting him; [PayPal](paypal.me/PaulSonOfLars), or [Monzo](monzo.me/paulnionvestergaardlarsen)."""
+
+IMPORTED = {}
+MIGRATEABLE = []
+HELPABLE = {}
+STATS = []
+USER_INFO = []
+DATA_IMPORT = []
+DATA_EXPORT = []
+CHAT_SETTINGS = {}
+USER_SETTINGS = {}
+
+GDPR = []
+
+for module_name in ALL_MODULES:
+    imported_module = importlib.import_module("AstrakoBot.modules." + module_name)
+    if not hasattr(imported_module, "__mod_name__"):
+        imported_module.__mod_name__ = imported_module.__name__
+
+    if imported_module.__mod_name__.lower() not in IMPORTED:
+        IMPORTED[imported_module.__mod_name__.lower()] = imported_module
+    else:
+        raise Exception("Can't have two modules with the same name! Please change one")
+
+    if hasattr(imported_module, "__help__") and imported_module.__help__:
+        HELPABLE[imported_module.__mod_name__.lower()] = imported_module
+
+    # Chats to migrate on chat_migrated events
+    if hasattr(imported_module, "__migrate__"):
+        MIGRATEABLE.append(imported_module)
+
+    if hasattr(imported_module, "__stats__"):
+        STATS.append(imported_module)
+
+    if hasattr(imported_module, "__gdpr__"):
+        GDPR.append(imported_module)
+
+    if hasattr(imported_module, "__user_info__"):
+        USER_INFO.append(imported_module)
+
+    if hasattr(imported_module, "__import_data__"):
+        DATA_IMPORT.append(imported_module)
+
+    if hasattr(imported_module, "__export_data__"):
+        DATA_EXPORT.append(imported_module)
+
+    if hasattr(imported_module, "__chat_settings__"):
+        CHAT_SETTINGS[imported_module.__mod_name__.lower()] = imported_module
+
+    if hasattr(imported_module, "__user_settings__"):
+        USER_SETTINGS[imported_module.__mod_name__.lower()] = imported_module
+
+
+# do not async
+def send_help(chat_id, text, keyboard=None):
+    if not keyboard:
+        keyboard = InlineKeyboardMarkup(paginate_modules(0, HELPABLE, "help"))
+    dispatcher.bot.send_message(
+        chat_id=chat_id,
+        text=text,
+        parse_mode=ParseMode.MARKDOWN,
+        disable_web_page_preview=True,
+        reply_markup=keyboard,
+    )
 
 
 def start(update: Update, context: CallbackContext):
+    args = context.args
     uptime = get_readable_time((time.time() - StartTime))
-
     if update.effective_chat.type == "private":
+        if len(args) >= 1:
+            if args[0].lower() == "help":
+                send_help(update.effective_chat.id, HELP_STRINGS)
+            elif args[0].lower().startswith("ghelp_"):
+                mod = args[0].lower().split("_", 1)[1]
+                if not HELPABLE.get(mod, False):
+                    return
+                send_help(
+                    update.effective_chat.id,
+                    HELPABLE[mod].__help__,
+                    InlineKeyboardMarkup(
+                        [[InlineKeyboardButton(text="Back", callback_data="help_back")]]
+                    ),
+                )
+            elif args[0].lower() == "markdownhelp":
+                IMPORTED["extras"].markdown_help_sender(update)
+            elif args[0].lower() == "super_users":
+                IMPORTED["super_users"].send_super_users(update)
+            elif args[0].lower().startswith("stngs_"):
+                match = re.match("stngs_(.*)", args[0].lower())
+                chat = dispatcher.bot.getChat(match.group(1))
 
-        first_name = update.effective_user.first_name
+                if user_is_admin(chat, update.effective_user.id):
+                    send_settings(match.group(1), update.effective_user.id, False)
+                else:
+                    send_settings(match.group(1), update.effective_user.id, True)
 
-        update.effective_message.reply_photo(
-            photo="https://files.catbox.moe/6tnx2a.jpg",
+            elif args[0][1:].isdigit() and "rules" in IMPORTED:
+                IMPORTED["rules"].send_rules(update, args[0], from_pm=True)
 
-            caption=f"""
-Hey there! My name is *{escape_markdown(context.bot.first_name)}*.
-I'm a modular group management bot and help admins to manage their groups.
-
-Have a look at the following for an idea of some of the things I can help you with.
-""",
-
-            parse_mode=ParseMode.MARKDOWN,
-
-            reply_markup=InlineKeyboardMarkup(
-                [
+        else:
+            first_name = update.effective_user.first_name
+            update.effective_message.reply_photo(
+                ASTRAKOBOT_IMG,
+                PM_START_TEXT.format(
+                    escape_markdown(first_name), escape_markdown(context.bot.first_name)
+                ),
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=InlineKeyboardMarkup(
                     [
-                        InlineKeyboardButton(
-                            text="➕ ADD ME TO YOUR GROUP",
-                            url=f"https://t.me/{context.bot.username}?startgroup=true",
-                        )
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            text="💬 SUPPORT",
-                            url=f"https://t.me/{SUPPORT_CHAT}",
-                        ),
-                        InlineKeyboardButton(
-                            text="📢 UPDATE",
-                            url="https://t.me/BOTxBOOSTER",
-                        ),
-                    ],
-                ]
-            ),
-        )
-
-    else:
-        try:
-            update.effective_message.reply_text(
-                f"✅ Bot Alive\n⏱ Uptime: {uptime}",
-                parse_mode=ParseMode.HTML,
+                        [
+                            InlineKeyboardButton(
+                                text="Add AstrakoBot to your group",
+                                url="t.me/{}?startgroup=true".format(
+                                    context.bot.username
+                                ),
+                            )
+                        ],
+                        [
+                            InlineKeyboardButton(
+                                text="Support Group",
+                                url=f"https://t.me/AstrakoBotSupport",
+                            ),
+                        ],
+                        [
+                            InlineKeyboardButton(
+                                text="Getting started guide",
+                                url="https://t.me/OnePunchUpdates/29",
+                            )
+                        ],
+                        [
+                            InlineKeyboardButton(
+                                text="Source code",
+                                url="https://github.com/Astrako/AstrakoBot",
+                            )
+                        ],
+                        [
+                            InlineKeyboardButton(
+                                text="Recommended federation",
+                                url="https://t.me/ALTF4Fed",
+                            )
+                        ],
+                    ]
+                ),
             )
-        except Exception as e:
-            print(e)
-            pass
+    else:
         try:
             update.effective_message.reply_text(
                 "I'm awake already!\n<b>Haven't slept since:</b> <code>{}</code>".format(
@@ -440,73 +573,4 @@ def donate(update: Update, context: CallbackContext):
                 "I've PM'ed you about donating to my creator!"
             )
         except Unauthorized:
-            update.effective_message.reply_text(
-                "Contact me in PM first to get donation information."
-            )
-
-
-def migrate_chats(update: Update, context: CallbackContext):
-    msg = update.effective_message  # type: Optional[Message]
-    if msg.migrate_to_chat_id:
-        old_chat = update.effective_chat.id
-        new_chat = msg.migrate_to_chat_id
-    elif msg.migrate_from_chat_id:
-        old_chat = msg.migrate_from_chat_id
-        new_chat = update.effective_chat.id
-    else:
-        return
-
-    LOGGER.info("Migrating from %s, to %s", str(old_chat), str(new_chat))
-    for mod in MIGRATEABLE:
-        mod.__migrate__(old_chat, new_chat)
-
-    LOGGER.info("Successfully migrated!")
-    raise DispatcherHandlerStop
-
-
-def main():
-    start_handler = CommandHandler("start", start, run_async=True)
-
-    help_handler = CommandHandler("help", get_help, run_async=True)
-    help_callback_handler = CallbackQueryHandler(help_button, pattern=r"help_.*", run_async=True)
-
-    settings_handler = CommandHandler("settings", get_settings, run_async=True)
-    settings_callback_handler = CallbackQueryHandler(settings_button, pattern=r"stngs_", run_async=True)
-
-    donate_handler = CommandHandler("donate", donate, run_async=True)
-    migrate_handler = MessageHandler(Filters.status_update.migrate, migrate_chats)
-
-    dispatcher.add_handler(start_handler)
-    dispatcher.add_handler(help_handler)
-    dispatcher.add_handler(settings_handler)
-    dispatcher.add_handler(help_callback_handler)
-    dispatcher.add_handler(settings_callback_handler)
-    dispatcher.add_handler(migrate_handler)
-    dispatcher.add_handler(donate_handler)
-
-    dispatcher.add_error_handler(error_callback)
-
-    if WEBHOOK:
-        LOGGER.info("Using webhooks.")
-        updater.start_webhook(listen="0.0.0.0", port=PORT, url_path=TOKEN)
-
-        if CERT_PATH:
-            updater.bot.set_webhook(url=URL + TOKEN, certificate=open(CERT_PATH, "rb"))
-        else:
-            updater.bot.set_webhook(url=URL + TOKEN)
-
-    else:
-        LOGGER.info("Using long polling.")
-        allowed_updates = ['message', 'edited_message', 'callback_query', 'callback_query', 'my_chat_member',
-                           'chat_member', 'chat_join_request', 'channel_post', 'edited_channel_post', 'inline_query']
-        updater.start_polling(timeout=15, read_latency=4, drop_pending_updates=DROP_UPDATES, allowed_updates = allowed_updates)
-
-    telethn.run_until_disconnected()
-
-    updater.idle()
-
-
-if __name__ == "__main__":
-    LOGGER.info("Successfully loaded modules: " + str(ALL_MODULES))
-    telethn.start(bot_token=TOKEN)
-    main()
+            updat
