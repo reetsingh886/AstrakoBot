@@ -12,7 +12,8 @@ class Development:
     USE_JOIN_LOGGER = True
 
     WEBHOOK = False
-    URL = None   # 🔥 ye add kar
+    URL = None
+    PORT = int(os.environ.get("PORT", 5000))   # 🔥 ye add hua
 
     ALLOW_CHATS = True
 
