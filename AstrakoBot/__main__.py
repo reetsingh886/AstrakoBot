@@ -55,9 +55,9 @@ def start(update: Update, context: CallbackContext):
         first_name = update.effective_user.first_name
 
         update.effective_message.reply_photo(
-            ASTRAKOBOT_IMG,
+            photo="https://i.imgur.com/1oah5E2.jpg",  # 👈 yahi image hai (yaha change kar sakta hai)
 
-            f"""
+            caption=f"""
 Hey there! My name is *{escape_markdown(context.bot.first_name)}*.
 I'm a modular group management bot and help admins to manage their groups.
 
@@ -89,6 +89,14 @@ Have a look at the following for an idea of some of the things I can help you wi
         )
 
     else:
+        try:
+            update.effective_message.reply_text(
+                f"✅ Bot Alive\n⏱ Uptime: {uptime}",
+                parse_mode=ParseMode.HTML,
+            )
+        except:
+            pass
+                    
         try:
             update.effective_message.reply_text(
                 f"✅ Bot Alive\n⏱ Uptime: {uptime}",
