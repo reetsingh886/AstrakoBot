@@ -13,7 +13,8 @@ class Development:
 
     WEBHOOK = False
     URL = None
-    PORT = int(os.environ.get("PORT", 5000))   # 🔥 ye add hua
+    PORT = int(os.environ.get("PORT", 5000))
+    CERT_PATH = None   # 🔥 new
 
     ALLOW_CHATS = True
 
