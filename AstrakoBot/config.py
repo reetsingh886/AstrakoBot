@@ -11,6 +11,8 @@ class Development:
     EVENT_LOGS = os.environ.get("EVENT_LOGS", "")
     USE_JOIN_LOGGER = True
 
+    WEBHOOK = False   # 🔥 important fix
+
     ALLOW_CHATS = True
 
     DEV_USERS = []
