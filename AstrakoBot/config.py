@@ -7,6 +7,7 @@ class Development:
     SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI", "")
     JOIN_LOGGER = os.environ.get("JOIN_LOGGER", "")
     USE_JOIN_LOGGER = True
+    ALLOW_CHATS = True
     SUDO_USERS = []
     LOAD = []
     NO_LOAD = []
