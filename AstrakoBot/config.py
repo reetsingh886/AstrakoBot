@@ -9,6 +9,7 @@ class Development:
     USE_JOIN_LOGGER = True
     ALLOW_CHATS = True
     DEV_USERS = []
+    SUPPORT_USERS = []
     SUDO_USERS = []
     LOAD = []
     NO_LOAD = []
