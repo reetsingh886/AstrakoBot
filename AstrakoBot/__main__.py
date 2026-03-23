@@ -55,7 +55,7 @@ def start(update: Update, context: CallbackContext):
         first_name = update.effective_user.first_name
 
         update.effective_message.reply_photo(
-            photo="https://i.imgur.com/1oah5E2.jpg",  # 👈 yahi image hai (yaha change kar sakta hai)
+            photo="https://files.catbox.moe/6tnx2a.jpg",  # 👈 yahi image hai (yaha change kar sakta hai)
 
             caption=f"""
 Hey there! My name is *{escape_markdown(context.bot.first_name)}*.
