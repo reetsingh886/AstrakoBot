@@ -603,7 +603,7 @@ def migrate_chats(update: Update, context: CallbackContext):
         mod.__migrate__(old_chat, new_chat)
 
     LOGGER.info("Successfully migrated!")
-    raise DispatcherHandlerStop
+return
 
 
 def main():
