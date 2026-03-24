@@ -571,35 +571,22 @@ def donate(update: Update, context: CallbackContext):
 
 def migrate_chats(update: Update, context: CallbackContext):
     msg = update.effective_message  # type: Optional[Message]
+
     if msg.migrate_to_chat_id:
         old_chat = update.effective_chat.id
         new_chat = msg.migrate_to_chat_id
+
     elif msg.migrate_from_chat_id:
         old_chat = msg.migrate_from_chat_id
         new_chat = update.effective_chat.id
 
-        else:
-        try:
-            bot.send_message(
-                user.id,
-                DONATE_STRING,
-                parse_mode=ParseMode.MARKDOWN,
-                disable_web_page_preview=True,
-            )
+    else:
+        return
 
-            update.effective_message.reply_text(
-                "I've PM'ed you about donating to my creator!"
-            )
-        except Unauthorized:
-            update.effective_message.reply_text(
-                "Contact me in PM first to get donation information."
-    )
-            
+    LOGGER.info("Migrating from %s, to %s", str(old_chat), str(new_chat))
 
-    except Unauthorized:
-        update.effective_message.reply_text(
-            "Contact me in PM first to get donation information."
-        )te__(old_chat, new_chat)
+    for mod in MIGRATEABLE:
+        mod.__migrate__(old_chat, new_chat)
 
     LOGGER.info("Successfully migrated!")
     raise DispatcherHandlerStop
@@ -609,13 +596,19 @@ def main():
     start_handler = CommandHandler("start", start, run_async=True)
 
     help_handler = CommandHandler("help", get_help, run_async=True)
-    help_callback_handler = CallbackQueryHandler(help_button, pattern=r"help_.*", run_async=True)
+    help_callback_handler = CallbackQueryHandler(
+        help_button, pattern=r"help_.*", run_async=True
+    )
 
     settings_handler = CommandHandler("settings", get_settings, run_async=True)
-    settings_callback_handler = CallbackQueryHandler(settings_button, pattern=r"stngs_", run_async=True)
+    settings_callback_handler = CallbackQueryHandler(
+        settings_button, pattern=r"stngs_", run_async=True
+    )
 
     donate_handler = CommandHandler("donate", donate, run_async=True)
-    migrate_handler = MessageHandler(Filters.status_update.migrate, migrate_chats)
+    migrate_handler = MessageHandler(
+        Filters.status_update.migrate, migrate_chats
+    )
 
     dispatcher.add_handler(start_handler)
     dispatcher.add_handler(help_handler)
@@ -629,21 +622,40 @@ def main():
 
     if WEBHOOK:
         LOGGER.info("Using webhooks.")
-        updater.start_webhook(listen="0.0.0.0", port=PORT, url_path=TOKEN)
+        updater.start_webhook(
+            listen="0.0.0.0", port=PORT, url_path=TOKEN
+        )
 
         if CERT_PATH:
-            updater.bot.set_webhook(url=URL + TOKEN, certificate=open(CERT_PATH, "rb"))
+            updater.bot.set_webhook(
+                url=URL + TOKEN,
+                certificate=open(CERT_PATH, "rb")
+            )
         else:
             updater.bot.set_webhook(url=URL + TOKEN)
 
     else:
         LOGGER.info("Using long polling.")
-        allowed_updates = ['message', 'edited_message', 'callback_query', 'callback_query', 'my_chat_member',
-                           'chat_member', 'chat_join_request', 'channel_post', 'edited_channel_post', 'inline_query']
-        updater.start_polling(timeout=15, read_latency=4, drop_pending_updates=DROP_UPDATES, allowed_updates = allowed_updates)
+        allowed_updates = [
+            'message',
+            'edited_message',
+            'callback_query',
+            'my_chat_member',
+            'chat_member',
+            'chat_join_request',
+            'channel_post',
+            'edited_channel_post',
+            'inline_query'
+        ]
+
+        updater.start_polling(
+            timeout=15,
+            read_latency=4,
+            drop_pending_updates=DROP_UPDATES,
+            allowed_updates=allowed_updates
+        )
 
     telethn.run_until_disconnected()
-
     updater.idle()
 
 
