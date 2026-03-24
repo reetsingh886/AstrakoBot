@@ -561,18 +561,7 @@ def donate(update: Update, context: CallbackContext):
                 parse_mode=ParseMode.MARKDOWN,
             )
 
-    else:
-        try:
-            bot.send_message(
-                user.id,
-                DONATE_STRING,
-                parse_mode=ParseMode.MARKDOWN,
-                disable_web_page_preview=True,
-            )
 
-            update.effective_message.reply_text(
-                "I've PM'ed you about donating to my creator!"
-            )
             
     except Unauthorized:
             update.effective_message.reply_text(
@@ -588,12 +577,29 @@ def migrate_chats(update: Update, context: CallbackContext):
     elif msg.migrate_from_chat_id:
         old_chat = msg.migrate_from_chat_id
         new_chat = update.effective_chat.id
+
     else:
         return
 
     LOGGER.info("Migrating from %s, to %s", str(old_chat), str(new_chat))
     for mod in MIGRATEABLE:
-        mod.__migrate__(old_chat, new_chat)
+        mod.__migraelse:
+    try:
+        bot.send_message(
+            user.id,
+            DONATE_STRING,
+            parse_mode=ParseMode.MARKDOWN,
+            disable_web_page_preview=True,
+        )
+
+        update.effective_message.reply_text(
+            "I've PM'ed you about donating to my creator!"
+        )
+
+    except Unauthorized:
+        update.effective_message.reply_text(
+            "Contact me in PM first to get donation information."
+        )te__(old_chat, new_chat)
 
     LOGGER.info("Successfully migrated!")
     raise DispatcherHandlerStop
