@@ -203,62 +203,68 @@ def start(update: Update, context: CallbackContext):
             elif args[0][1:].isdigit() and "rules" in IMPORTED:
                 IMPORTED["rules"].send_rules(update, args[0], from_pm=True)
 
-
-                    
-    else:
-        try:
-            update.effective_message.reply_text(
-                "I'm awake already!\n<b>Haven't slept since:</b> <code>{}</code>".format(
-                    uptime
-                ),
-                 parse_mode=ParseMode.HTML,
-            )
-        except BadRequest:
-            pass # chat_checker will take care of it, just don't error
-
-# for test purposes
-def error_callback(update: Update, context:if update.effective_chat.type == "private":
-    first_name = update.effective_user.first_name
-    update.effective_message.reply_photo(
-        ASTRAKOBOT_IMG,
-        PM_START_TEXT.format(
-            escape_markdown(first_name),
-            escape_markdown(context.bot.first_name),
-        ),
-        parse_mode=ParseMode.MARKDOWN,
-        reply_markup=InlineKeyboardMarkup(
-            [
-                [
-                    InlineKeyboardButton(
-                        text="➕ Add Me To Your Group",
-                        url=f"https://t.me/{context.bot.username}?startgroup=true",
-                    )
-                ],
-                [
-                    InlineKeyboardButton(
-                        text="👥 Support Group",
-                        url="https://t.me/AstrakoBotSupport",
-                    )
-                ],
-                [
-                    InlineKeyboardButton(
-                        text="📢 Updates Channel",
-                        url="https://t.me/AstrakoBotUpdates",
-                    )
-                ],
-            ]
-        ),
-    )
 else:
-    update.effective_message.reply_text(
-        "✅ Bot is alive in group!\n\nUse /help to see commands."
-    ) CallbackContext):
+    try:
+        update.effective_message.reply_text(
+            "I'm awake already!\n<b>Haven't slept since:</b> <code>{}</code>".format(
+                uptime
+            ),
+            parse_mode=ParseMode.HTML,
+        )
+    except BadRequest:
+        pass  # chat_checker will take care of it
+
+
+# ✅ ERROR CALLBACK (FIXED)
+def error_callback(update: Update, context: CallbackContext):
     error = context.error
     try:
         raise error
-    except:
-        print(error)
+    except Exception as e:
+        print(e)
 
+
+# ✅ START FUNCTION (BUTTONS FIXED)
+def start(update: Update, context: CallbackContext):
+    if update.effective_chat.type == "private":
+        first_name = update.effective_user.first_name
+        update.effective_message.reply_photo(
+            ASTRAKOBOT_IMG,
+            PM_START_TEXT.format(
+                escape_markdown(first_name),
+                escape_markdown(context.bot.first_name),
+            ),
+            parse_mode=ParseMode.MARKDOWN,
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            text="➕ Add Me To Your Group",
+                            url=f"https://t.me/{context.bot.username}?startgroup=true",
+                        )
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text="👥 Support Group",
+                            url="https://t.me/AstrakoBotSupport",
+                        )
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text="📢 Updates Channel",
+                            url="https://t.me/AstrakoBotUpdates",
+                        )
+                    ],
+                ]
+            ),
+        )
+    else:
+        update.effective_message.reply_text(
+            "✅ Bot is alive in group!\n\nUse /help to see commands."
+        )
+
+
+# ✅ HELP BUTTON (UNCHANGED SAFE)
 def help_button(update: Update, context: CallbackContext):
     query = update.callback_query
     mod_match = re.match(r"help_module\((.+?)\)", query.data)
@@ -313,12 +319,12 @@ def help_button(update: Update, context: CallbackContext):
                 ),
             )
 
-        # ensure no spinny white circle
         context.bot.answer_callback_query(query.id)
-        # query.message.delete()
 
     except BadRequest:
         pass
+                    
+
 
 
 def get_help(update: Update, context: CallbackContext):
