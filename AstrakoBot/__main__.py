@@ -203,36 +203,39 @@ def start(update: Update, context: CallbackContext):
             elif args[0][1:].isdigit() and "rules" in IMPORTED:
                 IMPORTED["rules"].send_rules(update, args[0], from_pm=True)
 
-        else:
-            first_name = update.effective_user.first_name
-            update.effective_message.reply_photo(
-                ASTRAKOBOT_IMG,
-                PM_START_TEXT.format(
-                    escape_markdown(first_name), escape_markdown(context.bot.first_name)
-                ),
-                parse_mode=ParseMode.MARKDOWN,
-                reply_markup=InlineKeyboardMarkup(
-                    [
-                        [
-                            InlineKeyboardButton(
-                                text="Add AstrakoBot to your group",
-                                url="t.me/{}?startgroup=true".format(
-                                    context.bot.username
-                                ),
-                            )
-                        ],
-                        [
-                            InlineKeyboardButton(
-                                text="Support Group",
-                                url=f"https://t.me/AstrakoBotSupport",
-                            ),
-                        ],
-                        [
-                            InlineKeyboardButton(
-                                text="Getting started guide",
-                                url="https://t.me/OnePunchUpdates/29",
-                            )
-                        ],
+else:
+    first_name = update.effective_user.first_name
+    update.effective_message.reply_photo(
+        ASTRAKOBOT_IMG,
+        PM_START_TEXT.format(
+            escape_markdown(first_name), escape_markdown(context.bot.first_name)
+        ),
+        parse_mode=ParseMode.MARKDOWN,
+        reply_markup=InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        text="Add AstrakoBot to your group",
+                        url="t.me/{}?startgroup=true".format(
+                            context.bot.username
+                        ),
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        text="Support Group",
+                        url="https://t.me/AstrakoBotSupport",
+                    ),
+                ],
+                [
+                    InlineKeyboardButton(
+                        text="Updates Channel",
+                        url="https://t.me/AstrakoBotUpdates",
+                    )
+                ]
+            ]
+        ),
+                )
                     
     else:
         try:
