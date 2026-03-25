@@ -98,7 +98,7 @@ And the following:
     "" if not ALLOW_EXCL else "\nAll commands can either be used with / or !.\n",
 )
 
-ASTRAKOBOT_IMG = "https://i.imgur.com/1oah5E2.jpg"
+ASTRAKOBOT_IMG = "https://files.catbox.moe/s0wxhv.jpg"
 
 DONATE_STRING = """Heya, glad to hear you want to donate!
 AstrakoBot is hosted on its own server and doesn't require any donations as of now but \
@@ -234,13 +234,13 @@ def start(update: Update, context: CallbackContext):
                     [
                         InlineKeyboardButton(
                             text="👥 Support Group",
-                            url="https://t.me/AstrakoBotSupport",
+                            url="https://t.me/BotsSupport_36",
                         )
                     ],
                     [
                         InlineKeyboardButton(
                             text="📢 Updates Channel",
-                            url="https://t.me/AstrakoBotUpdates",
+                            url="https://t.me/BOTxBOOSTER",
                         )
                     ],
                 ]
