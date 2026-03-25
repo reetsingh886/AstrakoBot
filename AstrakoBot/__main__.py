@@ -88,9 +88,7 @@ the things I can help you with.
 
 *Main* commands available:
  • /help: PM's you this message.
- • /help <module name>: PM's you info about that module.
- • /donate: information on how to donate!
- • /settings:
+ • /help <module name>: PM's you info about that module
    • in PM: will send you your settings for all supported modules.
    • in a group: will redirect you to pm, with all that chat's settings.
 {}
@@ -235,21 +233,7 @@ def start(update: Update, context: CallbackContext):
                                 url="https://t.me/OnePunchUpdates/29",
                             )
                         ],
-                        [
-                            InlineKeyboardButton(
-                                text="Source code",
-                                url="https://github.com/Astrako/AstrakoBot",
-                            )
-                        ],
-                        [
-                            InlineKeyboardButton(
-                                text="Recommended federation",
-                                url="https://t.me/ALTF4Fed",
-                            )
-                        ],
-                    ]
-                ),
-            )
+                    
     else:
         try:
             update.effective_message.reply_text(
