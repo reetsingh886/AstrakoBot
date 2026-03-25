@@ -203,19 +203,7 @@ def start(update: Update, context: CallbackContext):
             elif args[0][1:].isdigit() and "rules" in IMPORTED:
                 IMPORTED["rules"].send_rules(update, args[0], from_pm=True)
 
-else:
-    try:
-        update.effective_message.reply_text(
-            "I'm awake already!\n<b>Haven't slept since:</b> <code>{}</code>".format(
-                uptime
-            ),
-            parse_mode=ParseMode.HTML,
-        )
-    except BadRequest:
-        pass  # chat_checker will take care of it
-
-
-# ✅ ERROR CALLBACK (FIXED)
+# ✅ ERROR CALLBACK
 def error_callback(update: Update, context: CallbackContext):
     error = context.error
     try:
@@ -224,7 +212,7 @@ def error_callback(update: Update, context: CallbackContext):
         print(e)
 
 
-# ✅ START FUNCTION (BUTTONS FIXED)
+# ✅ START FUNCTION
 def start(update: Update, context: CallbackContext):
     if update.effective_chat.type == "private":
         first_name = update.effective_user.first_name
